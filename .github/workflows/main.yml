@@ -34,4 +34,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-actions:latest,${{ secrets.DOCKERHUB_USERNAME }}/github-actions:${{ steps.vars.outputs.timestamp }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/flask-app:latest,${{ secrets.DOCKERHUB_USERNAME }}/flask-app:${{ steps.vars.outputs.timestamp }}
