@@ -1,39 +1,35 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKERHUB_USERNAME = credentials('dockerhub-username')
-        DOCKERHUB_PASSWORD = credentials('dockerhub-password')
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', credentialsId: 'github-u287ur', url: 'https://github.com/u287ur/flask-app.git'
             }
         }
-        stage('Build Docker Image') {
+        
+        stage('Build & Push Image') {
             steps {
-                script {
-                    def tag = new Date().format('yyyyMMdd-HHmm')
-                    sh """
-                        docker build -t $DOCKERHUB_USERNAME/github-actions:latest .
-                        docker tag $DOCKERHUB_USERNAME/github-actions:latest $DOCKERHUB_USERNAME/github-actions:${tag}
-                    """
+                withCredentials([
+                usernamePassword(credentialsId: 'dockerhub-u287ur', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
+                ]) {
+                    script {
+                        def tag = new Date().format('yyyyMMdd-HHmm')
+                        sh """
+                            docker logout || true
+                            docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PASSWORD"
+
+                            docker build -t "$DOCKERHUB_USERNAME/github-actions:latest" .
+                            docker tag $DOCKERHUB_USERNAME/github-actions:latest $DOCKERHUB_USERNAME/github-actions:${tag}
+
+                            docker push $DOCKERHUB_USERNAME/github-actions:latest
+                            docker push $DOCKERHUB_USERNAME/github-actions:${tag}
+                        """
+                    }
                 }
             }
         }
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    sh """
-                        echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
-                        docker push $DOCKERHUB_USERNAME/github-actions:latest
-                        docker push $DOCKERHUB_USERNAME/github-actions:\$(date +'%Y%m%d-%H%M')
-                    """
-                }
-            }
-        }
+        
         stage('Deploy with Docker Compose') {
             steps {
                 sh """
@@ -41,6 +37,15 @@ pipeline {
                     docker compose up -d
                 """
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment completed successfully."
+        }
+        failure {
+            echo "❌ Deployment failed!"
         }
     }
 }
