@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   app:
-    image: ${DOCKERHUB_USERNAME}/github-actions:latest
-    container_name: github-actions-app
+    image: ${DOCKERHUB_USERNAME}/flask-app:latest
+    container_name: flask-app
     ports:
       - "8888:8888"
     restart: always
