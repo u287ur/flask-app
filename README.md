@@ -1,4 +1,4 @@
-# github-actions
+# Flask-App
 
 This project demonstrates how to containerize a Flask application with Docker, automate image builds and pushes to DockerHub using GitHub Actions.
 
